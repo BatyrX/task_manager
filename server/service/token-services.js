@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken')
- const TokenModel = require('../models/token-models')
+const TokenModel = require('../models/token-models')
+const {validationResult} = require('express-validator');
+
+
 class TokenService {
   generateTokens(payload) {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {expiresIn: '1h'})
@@ -19,6 +22,11 @@ class TokenService {
 
     const token = await TokenModel.create({user: userId, refreshToken})
     return token
+  }
+
+  async removeToken(refreshToken) {
+    const tokenData = await TokenModel.deleteOne({refreshToken})
+    return tokenData
   }
 }
 

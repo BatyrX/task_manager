@@ -1,4 +1,4 @@
-const Task = require('../models/task-model');
+const Task = require('../models/task-models');
 
 class TaskService {
     async createTask(userId, title, dueDate) {

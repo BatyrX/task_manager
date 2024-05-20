@@ -1,8 +1,14 @@
 const express = require('express');
-const router = express.Router();
+const {body} = require('express-validator')
+const taskRouter = express.Router();
 const taskController = require('../controllers/task-controllers');
 
-router.post('/tasks', taskController.createTask);
-router.get('/tasks/user/:userId', taskController.getTasksByUser);
+taskRouter.post('/tasks', 
+    body('title').isString().isLength({min: 4}),
+    body('dueDate').isISO8601(),
 
-module.exports = router;
+    taskController.createTask);
+taskRouter.get('/tasks/:userId', taskController.getTasksByUser);
+
+module.exports = taskRouter;
+//prettier

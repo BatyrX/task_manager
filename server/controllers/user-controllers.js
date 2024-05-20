@@ -1,33 +1,35 @@
 const userService = require("../service/user-services");
-
+const {validationResult} = require('express-validator');
 class UserControllers {
     async registration(req, res, next) {
         try {
-            const { email, password } = req.body;
-            if (!email || !password) {
-                return res.status(400).json({ error: 'Email and password are required' });
-            }
-            const tokensAndUser = await userService.registration(email, password);
+            const err = validationResult(req);
+         if (!err.isEmpty()) {
+         return  res.status(400).json({ message: 'Неправильные введенные данные' });
+  }
+            const { username, email, password } = req.body;
+            const tokensAndUser = await userService.registration(username, email, password);
             res.cookie('refreshToken', tokensAndUser.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
-            return res.json(tokensAndUser);
+            return res.json({...tokensAndUser, message: 'User created'});
         } catch (e) {
             console.log(e);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 
     async login(req, res, next) {
         try {
+            const err = validationResult(req);
+            if (!err.isEmpty()) {
+            return  res.status(400).json({ message: 'Неправильные введенные данные' });
+        } 
             const { email, password } = req.body;
-            if (!email || !password) {
-                return res.status(400).json({ error: 'Email and password are required' });
-            }
             const tokensAndUser = await userService.login(email, password);
             res.cookie('refreshToken', tokensAndUser.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
             return res.json(tokensAndUser);
         } catch (e) {
             console.log(e);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 
@@ -39,7 +41,7 @@ class UserControllers {
             return res.json(token);
         } catch (e) {
             console.log(e);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 
@@ -51,17 +53,7 @@ class UserControllers {
             return res.json(userData);
         } catch (e) {
             console.log(e);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-    }
-
-    async getUsers(req, res, next) {
-        try {
-            const users = await userService.getUsers();
-            return res.json(users);
-        } catch (e) {
-            console.log(e);
-            return res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ message: 'Internal server error' });
         }
     }
 }

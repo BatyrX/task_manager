@@ -44,20 +44,39 @@ class UserService {
         return token
     }
 
-    async refresh(refreshToken) {
-        if (!refreshToken) {
-            throw new Error('Неверный токен1')
-        }
-        const userData = tokenService.validateRefreshToken(refreshToken)
-        const tokenFromDb = await tokenService.findToken(refreshToken)
-        if (!userData || !tokenFromDb) {
-            throw new Error('Неверный токен')
-        }
-        const user = await UserModel.findById(userData.id)
-        const userDto = new UserDto(user)
-        const tokens = tokenService.generateTokens({...userDto})
-        await tokenService.saveToken(userDto.id, tokens.refreshToken)
-        return {...tokens, user: userDto}
+async refresh(refreshToken) {
+    if (!refreshToken) {
+        console.log('Отсутствует токен');
+        throw new Error('Неверный токен');
     }
+
+    const userData = tokenService.validateRefreshToken(refreshToken);
+    if (!userData) {
+        console.log('Невалидный refresh token');
+        throw new Error('Неверный токен1');
+    } else {
+        console.log('userData:', userData);
+    }
+
+    const tokenFromDb = await tokenService.findToken(refreshToken);
+    if (!tokenFromDb) {
+        console.log('Токен не найден в базе данных');
+        throw new Error('Неверный токен2');
+    } else {
+        console.log('tokenFromDb:', tokenFromDb);
+    }
+
+    const user = await UserModel.findById(userData.id);
+    if (!user) {
+        console.log('Пользователь не найден');
+        throw new Error('Пользователь не найден');
+    }
+
+    const userDto = { id: user._id, email: user.email };
+    const tokens = tokenService.generateTokens({ ...userDto });
+    await tokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return { ...tokens, user: userDto };
+}
 }
 module.exports = new UserService()

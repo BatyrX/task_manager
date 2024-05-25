@@ -15,9 +15,9 @@ class TaskController {
         }
     }
 
-    async getTasksByUser(req, res, next) {
+    async getTasks(req, res, next) {
         try {
-            const { userId } = req.params;
+            const { userId } = req.user._id;
             const tasks = await taskService.getTasksByUser(userId);
             return res.json(tasks);
         } catch (e) {
@@ -25,6 +25,31 @@ class TaskController {
             return res.status(500).json({ error: 'Internal server error' });
         }
     }
+
+    async updateTask(req, res, next) {  
+        try {
+            const { userId } = req.userId;
+            const { taskId, title, dueDate, completed } = req.body;
+            const task = await taskService.updateTask(taskId, title, dueDate, completed);
+            return res.json(task);
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+    async deleteTask(req, res, next) {
+        try {
+            const { userId } = req.userId;
+            const { taskId } = req.body;
+            await taskService.deleteTask(taskId);
+            return res.json({ message: 'Task deleted successfully' });
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
 }
 
 module.exports = new TaskController();
